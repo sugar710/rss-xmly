@@ -14,7 +14,7 @@ app
             return console.log('请使用 -u 配置喜马拉雅地址')
         }
         if (!output) {
-            let match = url.match(/\/(\d+)\/?(p\d+)?$/);
+            let match = url.match(/\/(\d+)\/?(p\d+\/?)?$/);
             if (!match) {
                 return console.log('请使用 -o 配置输出文件');
             }
@@ -26,7 +26,7 @@ app
             //return console.log('文件夹:' + folder + '不存在!');
             fs.mkdirSync(folder, {recursive: true, mode: "755"});
         }
-        
+
         let rss = new RSS();
         let channel = await rss.getAlbum(url);
         let xml = buildXml(channel);

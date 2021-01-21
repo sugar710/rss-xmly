@@ -14,21 +14,22 @@ export default class RSS {
         let pages = Number(
             $(".pagination .quick-jump .control-input").attr("max")
         );
-        
-        let pageList = new Array(pages)
-            .fill(null)
-            .map((item, index) => `${url}p${index + 1}/`);
+        let albumId = url.match(/\/(\d+)\/?(p\d+\/?)?$/)[1];
+
+        image = image.substring(0, image.indexOf("!strip"));
         console.log("标题:", title);
         console.log("封面:", image);
         console.log("作者:", author);
         console.log("页数:", pages);
         return {
+            albumId,
             title,
-            image: image.substring(0, image.indexOf("!strip")),
+            image,
             author,
-            pageList,
             list: [],
             url: url,
+            pages,
+
         };
     };
 
@@ -37,7 +38,7 @@ export default class RSS {
      * 
      * @param {number} id 
      */
-    async audioUrl(id) {
+    async getAudioPlayUrl(id) {
         let ua =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36";
         let url = `https://www.ximalaya.com/revision/play/v1/audio?id=${id}&ptype=1`;
@@ -51,72 +52,35 @@ export default class RSS {
     }
 
     /**
-     * 获取资源时长
-     * 
-     * @param {string} url 
-     */
-    async audioDuration(url) {
-        const format = (time) => {
-            let h = (~~(time / 3600)).toString().padStart(2, "0");
-            let m = (~~(time / 60)).toString().padStart(2, "0");
-            let s = (~~(time % 60)).toString().padStart(2, "0");
-            return `${h}:${m}:${s}`;
-        };
-        return new Promise((resolve) => {
-            ffmpeg.ffprobe(url, (err, metadata) => {
-                if (err) {
-                    return resolve("00:00:00");
-                }
-                resolve(format(metadata.format.duration));
-            });
-        });
-    }
-
-    /**
      * 获取专辑信息
      * 
      * @param {string} url 
      */
     async getAlbum(url) {
         let channel = await this.getChannel(url);
-        channel.list = await this.getAudioList(channel.pageList);
+        for (let i = 1; i <= channel.pages; i++) {
+            channel.list = channel.list.concat(await this.getAudioList(channel.albumId, i))
+        }
         return channel;
     }
 
-    /**
-     * 获取专辑资源列表
-     * 
-     * @param {array} pageList 
-     */
-    async getAudioList(pageList) {
-        //https://www.ximalaya.com/revision/album/v1/getTracksList?albumId=261506&pageNum=2
-        let list = [];
-        for (let i = 0; i < pageList.length; i++) {
-            console.log(`开始抓取第${i + 1}页`, pageList[i]);
-            let data = await this.getAudio(pageList[i]);
-            list = list.concat(data);
-        }
-        return list;
-    }
-
-    async getAudio(url) {
-        let { data: content } = await axios.get(url);
-        let $ = cheerio.load(content);
-
+    async getAudioList(albumId, pageNum = 1) {
+        console.log(`开始加载专辑 ${albumId} 第 ${pageNum} 页`);
+        let url = `https://www.ximalaya.com/revision/album/v1/getTracksList?albumId=${albumId}&pageNum=${pageNum}`
+        let { data: res } = await axios.get(url, {
+            headers: {
+                'xm-sign': await this.getSign(),
+            }
+        });
         let result = [];
-        let list = $(".detail .sound-list>ul>li");
-
+        let list = res.data.tracks;
         for (let i = 0; i < list.length; i++) {
-            let a = $(list[i]).find(".text a");
-            let title = $(list[i]).find(".text a").text();
-            let aid = $(list[i]).find(".text a").attr("href").split("/").pop();
-            let src = await this.audioUrl(aid);
             result.push({
-                title: title,
-                url: src,
-                source: "https://ximalaya.com" + a.attr("href"),
-                duration: await this.audioDuration(src),
-            });
+                title: list[i].title,
+                url: await this.getAudioPlayUrl(list[i].trackId),
+                source: 'https://ximalaya.com' + list[i].url,
+                duration: list[i].duration,
+            })
         }
         return result;
     }
@@ -125,20 +89,13 @@ export default class RSS {
      * 生成签名
      */
     async getSign() {
-        let xmTime = await this.getXMTime();
-        return `{himalaya-${xmTime}}(12)${xmTime}(11)${Date.now()}`.replace(
+        let url = `https://www.ximalaya.com/revision/time`;
+        let serverTime = await axios.get(url).then(res => res.data);
+        return `{himalaya-${serverTime}}(12)${serverTime}(11)${Date.now()}`.replace(
             /{([\w-]+)}/,
             function (t, e) {
                 return md5(e);
             }
         );
-    }
-
-    /**
-     * 获取服务器时间
-     */
-    async getXMTime() {
-        let url = `https://www.ximalaya.com/revision/time`;
-        return await axios.get(url).then((res) => res.data);
     }
 }

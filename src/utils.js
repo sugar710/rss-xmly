@@ -14,7 +14,7 @@ export const buildXml = (channel) => {
                     <description><![CDATA[${item.title}]]></description>
                     <itunes:image href="${channel.image}"/>
                     <enclosure url="${item.url}" type="audio/mpeg"/>
-                    <itunes:duration>${item.duration}</itunes:duration>
+                    <itunes:duration>${durationFormat(item.duration)}</itunes:duration>
                 </item>
             `;
     });
@@ -37,7 +37,7 @@ export const buildXml = (channel) => {
                     <itunes:name>冯二毅</itunes:name>
                     <itunes:email>hxtgirq710@gmail.com</itunes:email>
                 </itunes:owner>
-                ${list.join("\r\n")}
+                ${list.join("")}
             </channel>
         </rss>
         `;
@@ -57,4 +57,11 @@ export const dirExists = (dir) => {
     return new Promise((resolve) => {
         fs.exists(dir, valid => resolve(valid));
     })
+}
+
+export const durationFormat = time => {
+    let h = (~~(time / 3600)).toString().padStart(2, "0");
+    let m = (~~(time / 60)).toString().padStart(2, "0");
+    let s = (~~(time % 60)).toString().padStart(2, "0");
+    return `${h}:${m}:${s}`;
 }
