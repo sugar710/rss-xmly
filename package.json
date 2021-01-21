@@ -1,0 +1,35 @@
+{
+  "name": "rss-xmly",
+  "version": "1.0.0",
+  "description": "命令行抓取喜马拉雅专辑生成XML文件供播客使用(仅限非VIP资源)",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm-run-all compile link",
+    "compile": "webpack",
+    "link": "sed -i '1s/^/#!\\/usr\\/bin\\/env node\\n\\n/' dist/rss.js "
+  },
+  "bin": {
+    "rss": "./dist/rss.js"
+  },
+  "author": "冯二毅 <hxtgirq710@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "cheerio": "^1.0.0-rc.5",
+    "commander": "^7.0.0",
+    "crypto-js": "^4.0.0",
+    "fluent-ffmpeg": "^2.1.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-transform-runtime": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/register": "^7.12.10",
+    "npm-run-all": "^4.1.5",
+    "webpack-node-externals": "^2.5.2"
+  },
+  "engines": {
+    "node": ">=12.16.1",
+    "npm": ">=6.14.10"
+  }
+}
