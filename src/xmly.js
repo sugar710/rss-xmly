@@ -1,7 +1,6 @@
 import cheerio from "cheerio";
 import axios from "axios";
 import md5 from "crypto-js/md5";
-import ffmpeg from "fluent-ffmpeg";
 
 export default class RSS {
 
@@ -12,7 +11,7 @@ export default class RSS {
         let image = "https:" + $(".detail img.img").attr("src");
         let author = $(".anchor-info a.nick-name").text();
         let pages = Number(
-            $(".pagination .quick-jump .control-input").attr("max")
+            $(".pagination .quick-jump .control-input").attr("max") || 1
         );
         let albumId = url.match(/\/(\d+)\/?(p\d+\/?)?$/)[1];
 
