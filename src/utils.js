@@ -10,9 +10,9 @@ export const buildXml = (channel) => {
                 <item>
                     <title><![CDATA[${item.title}]]></title>
                     <link><![CDATA[${item.source}]]></link>
-                    <pubDate></pubDate>
-                    <description><![CDATA[${item.title}]]></description>
-                    <itunes:image href="${channel.image}"/>
+                    <pubDate>${item.lastUpdate}</pubDate>
+                    <description><![CDATA[${item.description}]]></description>
+                    <itunes:image href="${item.cover}"/>
                     <enclosure url="${item.url}" type="audio/mpeg"/>
                     <itunes:duration>${durationFormat(item.duration)}</itunes:duration>
                 </item>

@@ -50,6 +50,16 @@ export default class RSS {
         return res.data.src;
     }
 
+    async getAudioInfo(id) {
+        let url = `https://www.ximalaya.com/revision/track/simple?trackId=${id}`;
+        let {data: res} = await axios.get(url);
+        let playUrl = await this.getAudioPlayUrl(id);
+        return {
+            ...res.data.trackInfo,
+            playUrl: playUrl
+        }
+    }
+
     /**
      * 获取专辑信息
      * 
@@ -74,11 +84,16 @@ export default class RSS {
         let result = [];
         let list = res.data.tracks;
         for (let i = 0; i < list.length; i++) {
+            let info = await this.getAudioInfo(list[i].trackId);
             result.push({
                 title: list[i].title,
-                url: await this.getAudioPlayUrl(list[i].trackId),
+                //url: await this.getAudioPlayUrl(list[i].trackId),
+                url: info.playUrl,
                 source: 'https://ximalaya.com' + list[i].url,
                 duration: list[i].duration,
+                lastUpdate: info.lastUpdate,
+                description: info.richIntro.replace(/p><p/g, 'p>\r\n<p').replace(/<[^>]*>/g, '').replace(/\r\n/g, '<br/>'),
+                cover: 'http:' + info.coverPath
             })
         }
         return result;
