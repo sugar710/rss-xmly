@@ -29,6 +29,7 @@ export const buildXml = (channel) => {
                 <title><![CDATA[${channel.title}]]></title>
                 <link>${channel.url}</link>
                 <pubDate>${new Date()}</pubDate>
+                <description><![CDATA[${channel.description}]]></description>
                 <generator>冯二毅</generator>
                 <language>zh-CN</language>
                 <itunes:author>${channel.author}</itunes:author>

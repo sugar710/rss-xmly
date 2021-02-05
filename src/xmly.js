@@ -8,6 +8,7 @@ export default class RSS {
         let { data: content } = await axios.get(url);
         let $ = cheerio.load(content);
         let title = $(".detail h1.title").text();
+        let description = $(".detail article.intro").text();
         let image = "https:" + $(".detail img.img").attr("src");
         let author = $(".anchor-info a.nick-name").text();
         let pages = Number(
@@ -19,10 +20,12 @@ export default class RSS {
         console.log("标题:", title);
         console.log("封面:", image);
         console.log("作者:", author);
+        console.log("简介:", description);
         console.log("页数:", pages);
         return {
             albumId,
             title,
+            description,
             image,
             author,
             list: [],
@@ -87,12 +90,11 @@ export default class RSS {
             let info = await this.getAudioInfo(list[i].trackId);
             result.push({
                 title: list[i].title,
-                //url: await this.getAudioPlayUrl(list[i].trackId),
                 url: info.playUrl,
                 source: 'https://ximalaya.com' + list[i].url,
                 duration: list[i].duration,
                 lastUpdate: info.lastUpdate,
-                description: info.richIntro.replace(/p><p/g, 'p>\r\n<p').replace(/<[^>]*>/g, '').replace(/\r\n/g, '<br/>'),
+                description: info.richIntro.replace(/p><p/g, 'p>\n<p').replace(/<[^>]*>/g, '').replace(/\n/g, '<br/>'),
                 cover: 'http:' + info.coverPath
             })
         }
