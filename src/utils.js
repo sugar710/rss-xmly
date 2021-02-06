@@ -23,7 +23,7 @@ export const buildXml = (channel) => {
         <rss 
             xmlns:atom="http://www.w3.org/2005/Atom"
             xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
-            versiion="2.0"
+            version="2.0"
             encoding="UTF-8">
             <channel>
                 <title><![CDATA[${channel.title}]]></title>
